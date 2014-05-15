@@ -41,37 +41,37 @@
     map)
   "Keymap for `peep-dired-mode'.")
 
-(defvar peep-dired-mode-hook nil
-  "Hook for `peep-dired-mode'.")
-
-(defvar peep-dired-peeped-buffers ()
-  "List with buffers of peeped files")
-
-(defcustom peep-dired-cleanup-on-disable t
-  "Cleanup opened buffers when disabling the minor mode"
-  :group 'peep-dired
-  :type 'boolean)
-
 (defun peep-dired-next-file ()
   (interactive)
-  (dired-next-line 1)
-  (peep-dired-display-file-other-window))
+  (when (dired-next-line 1)
+    (kill-buffer-if-not-modified peep-dired--marked-to-kill)
+    (peep-dired-display-file-other-window)))
 
 (defun peep-dired-prev-file ()
   (interactive)
-  (dired-previous-line 1)
-  (peep-dired-display-file-other-window))
+  (when (dired-previous-line 1)
+    (kill-buffer-if-not-modified peep-dired--marked-to-kill)
+    (peep-dired-display-file-other-window)))
+
+(defun peep-dired--find-already-visited-file (name)
+  (or
+   (find-buffer-visiting name)
+   (car (or (dired-buffers-for-dir name) ())))
+  )
+
+(defun peep-dired--find-file (name)
+  (let ((buffer (find-file-noselect name)))
+    (setq-local peep-dired--marked-to-kill buffer)
+    buffer
+    ))
 
 (defun peep-dired-display-file-other-window ()
   (let ((entry-name (dired-file-name-at-point)))
-    (add-to-list 'peep-dired-peeped-buffers
-		 (window-buffer
-		  (display-buffer
-		   (or
-		       (find-buffer-visiting entry-name)
-		       (car (or (dired-buffers-for-dir entry-name) ()))
-		       (find-file-noselect entry-name))
-		   t))))
+    (window-buffer
+     (display-buffer
+      (or (peep-dired--find-already-visited-file entry-name)
+	  (peep-dired--find-file entry-name))
+      t)))
   )
 
 (defun peep-dired-scroll-page-down ()
@@ -84,10 +84,9 @@
 
 (defun peep-dired-disable ()
   (let ((current-point (point)))
+    (when peep-dired--marked-to-kill
+      (kill-buffer-if-not-modified peep-dired--marked-to-kill))
     (jump-to-register :peep_dired_before)
-    (when peep-dired-cleanup-on-disable
-      (mapc 'kill-buffer-if-not-modified peep-dired-peeped-buffers))
-    (setq peep-dired-peeped-buffers ())
     (goto-char current-point)))
 
 (defun peep-dired-enable ()
@@ -95,7 +94,6 @@
     (error "Run it from dired buffer"))
 
   (window-configuration-to-register :peep_dired_before)
-  (make-local-variable 'peep-dired-peeped-buffers)
   (delete-other-windows)
   (peep-dired-display-file-other-window))
 

@@ -33,9 +33,13 @@
       (lambda (buffername)
 	(should (eq (window-start (get-buffer-window buffername)) 1))))
 
-(Then "^the peeped buffers should be killed$"
-      (lambda ()
-	(should (eq () peep-dired-peeped-buffers))))
+(Then "^the peeped buffer \"\\(.+\\)\" should be killed$"
+      (lambda (buffername)
+	(should (not (member buffername (mapcar 'buffer-name (buffer-list)))))))
+
+(Then "^the peeped buffer \"\\(.+\\)\" should not be killed$"
+      (lambda (buffername)
+	(should (member buffername (mapcar 'buffer-name (buffer-list))))))
 
 (Then "the only visible windows are \"\\(.+\\)\" and \"\\(.+\\)\""
       (lambda (dired-buffer peeped-buffer)
