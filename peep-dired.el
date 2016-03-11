@@ -40,6 +40,7 @@
     (define-key map (kbd "<SPC>")       'peep-dired-scroll-page-down)
     (define-key map (kbd "C-<SPC>")     'peep-dired-scroll-page-up)
     (define-key map (kbd "<backspace>") 'peep-dired-scroll-page-up)
+    (define-key map (kbd "q")           'peep-dired)
     map)
   "Keymap for `peep-dired-mode'.")
 
