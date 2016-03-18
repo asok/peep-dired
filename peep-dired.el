@@ -68,6 +68,11 @@
   :group 'peep-dired
   :type 'list)
 
+(defcustom peep-dired-max-size (* 100 1024 1024)
+  "Do to not try to open file exteeds this size"
+  :group 'peep-dired
+  :type 'integer)
+
 (defun peep-dired-next-file ()
   (interactive)
   (dired-next-line 1)
@@ -100,8 +105,10 @@
 
 (defun peep-dired-display-file-other-window ()
   (let ((entry-name (dired-file-name-at-point)))
-    (unless (member (file-name-extension entry-name)
-                    peep-dired-ignored-extensions)
+    (unless (or (member (file-name-extension entry-name)
+                        peep-dired-ignored-extensions)
+                (> (nth 7 (file-attributes entry-name))
+                   peep-dired-max-size))
       (add-to-list 'peep-dired-peeped-buffers
                    (window-buffer
                     (display-buffer
