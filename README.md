@@ -52,6 +52,10 @@ You probably don't want to open certain files like videos when using Peep Dired.
 (setq peep-dired-ignored-extensions '("mkv" "iso" "mp4"))
 ```
 
+## Alternatives
+
+* [ranger.el](https://github.com/ralesi/ranger.el) emulates [ranger](http://ranger.nongnu.org/) in dired. It has the preview feature similar to Peep-Dired.
+
 ## Contribution
 
 Install [cask](https://github.com/rejeep/cask.el) if you haven't already, then:
