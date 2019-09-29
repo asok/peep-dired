@@ -1,3 +1,5 @@
+# This project is looking for a mainater, please look [here](https://github.com/asok/peep-dired/issues/17)
+
 # Peep Dired
 
 This is a minor mode that can be enabled from a dired buffer.
