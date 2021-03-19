@@ -57,6 +57,7 @@ You probably don't want to open certain files like videos when using Peep Dired.
 ## Alternatives
 
 * [ranger.el](https://github.com/ralesi/ranger.el) emulates [ranger](http://ranger.nongnu.org/) in dired. It has the preview feature similar to Peep-Dired.
+* [diredc](https://github.com/Boruch-Baum/emacs-diredc) extensions to dired. It has a browse mode which has a similar feature to Peep-Dired.
 
 ## Contribution
 
