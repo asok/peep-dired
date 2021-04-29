@@ -44,6 +44,9 @@
     map)
   "Keymap for `peep-dired-mode'.")
 
+(defvar peep-dired-display-file-hook nil
+  "Hook run when displaying a file using peep-dired.")
+
 (defvar peep-dired-peeped-buffers ()
   "List with buffers of peeped files")
 
@@ -73,8 +76,19 @@
   :group 'peep-dired
   :type 'integer)
 
+(defcustom peep-dired-display-action-alist nil
+  "Action alist for display-buffer action function used to
+  peep."
+  :group 'peep-dired
+  :type 'list)
+
+(defvar peep-dired--active-window nil
+  "Currently peeeped (opened) window")
+
 (defun peep-dired-next-file ()
   (interactive)
+  (if (window-live-p peep-dired--active-window)
+      (delete-window peep-dired--active-window))
   (dired-next-line 1)
   (peep-dired-display-file-other-window)
   (when peep-dired-cleanup-eagerly
@@ -82,6 +96,8 @@
 
 (defun peep-dired-prev-file ()
   (interactive)
+  (if (window-live-p peep-dired--active-window)
+      (delete-window peep-dired--active-window))
   (dired-previous-line 1)
   (peep-dired-display-file-other-window)
   (when peep-dired-cleanup-eagerly
@@ -109,15 +125,17 @@
                         peep-dired-ignored-extensions)
                 (> (nth 7 (file-attributes entry-name))
                    peep-dired-max-size))
+      (setq peep-dired--active-window (display-buffer
+                                             (if (file-directory-p entry-name)
+                                                 (peep-dired-dir-buffer entry-name)
+                                               (or
+                                                (find-buffer-visiting entry-name)
+                                                (find-file-noselect entry-name)))
+                                             (or peep-dired-display-action-alist t)))
+      (with-current-buffer (window-buffer peep-dired--active-window)
+        (run-hooks 'peep-dired-display-file-hook))
       (add-to-list 'peep-dired-peeped-buffers
-                   (window-buffer
-                    (display-buffer
-                     (if (file-directory-p entry-name)
-                         (peep-dired-dir-buffer entry-name)
-                       (or
-                        (find-buffer-visiting entry-name)
-                        (find-file-noselect entry-name)))
-                     t))))))
+                   (window-buffer peep-dired--active-window)))))
 
 (defun peep-dired-scroll-page-down ()
   (interactive)
@@ -133,7 +151,9 @@
 
 (defun peep-dired-disable ()
   (let ((current-point (point)))
-    (jump-to-register :peep_dired_before)
+    ;; (jump-to-register :peep_dired_before)
+    (if (window-live-p peep-dired--active-window)
+        (delete-window peep-dired--active-window))
     (when peep-dired-cleanup-on-disable
       (mapc 'kill-buffer-if-not-modified peep-dired-peeped-buffers))
     (setq peep-dired-peeped-buffers ())
@@ -143,8 +163,8 @@
   (unless (string= major-mode "dired-mode")
     (error "Run it from dired buffer"))
 
-  (window-configuration-to-register :peep_dired_before)
-  (delete-other-windows)
+  ;; (window-configuration-to-register :peep_dired_before)
+  ;; (delete-other-windows)
   (peep-dired-display-file-other-window))
 
 ;;;###autoload
