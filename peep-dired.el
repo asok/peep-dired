@@ -82,23 +82,33 @@
   :group 'peep-dired
   :type 'list)
 
+(defcustom peep-dired-preview-excluded-hooks
+  '(epa-file-find-file-hook
+    recentf-track-opened-file
+    vc-refresh-state)
+  "List of `find-file' hooks, which should not be executed during file preview.
+In particular we don't want to modify the list of recent files and we
+don't want to see epa password prompts."
+  :group 'peep-dired
+  :type '(repeat symbol))
+
 (defvar peep-dired--active-window nil
   "Currently peeeped (opened) window")
 
-(defun peep-dired-next-file ()
-  (interactive)
+(defun peep-dired-next-file (&optional arg)
+  (interactive "p")
   (if (window-live-p peep-dired--active-window)
       (delete-window peep-dired--active-window))
-  (dired-next-line 1)
+  (dired-next-line (or arg 1))
   (peep-dired-display-file-other-window)
   (when peep-dired-cleanup-eagerly
     (peep-dired-cleanup)))
 
-(defun peep-dired-prev-file ()
-  (interactive)
+(defun peep-dired-prev-file (&optional arg)
+  (interactive "p")
   (if (window-live-p peep-dired--active-window)
       (delete-window peep-dired--active-window))
-  (dired-previous-line 1)
+  (dired-previous-line (or arg 1))
   (peep-dired-display-file-other-window)
   (when peep-dired-cleanup-eagerly
     (peep-dired-cleanup)))
@@ -125,13 +135,19 @@
                         peep-dired-ignored-extensions)
                 (> (nth 7 (file-attributes entry-name))
                    peep-dired-max-size))
-      (setq peep-dired--active-window (display-buffer
-                                             (if (file-directory-p entry-name)
-                                                 (peep-dired-dir-buffer entry-name)
-                                               (or
-                                                (find-buffer-visiting entry-name)
-                                                (find-file-noselect entry-name)))
-                                             (or peep-dired-display-action-alist t)))
+      (setq peep-dired--active-window
+            (display-buffer
+             (if (file-directory-p entry-name)
+                 (peep-dired-dir-buffer entry-name)
+               (or
+                (find-buffer-visiting entry-name)
+                (cl-letf (((default-value 'find-file-hook)
+                           (seq-remove
+                            (lambda (x)
+                              (memq x peep-dired-preview-excluded-hooks))
+                            (default-value 'find-file-hook))))
+                  (find-file-noselect entry-name))))
+             (or peep-dired-display-action-alist t)))
       (with-current-buffer (window-buffer peep-dired--active-window)
         (run-hooks 'peep-dired-display-file-hook))
       (add-to-list 'peep-dired-peeped-buffers
