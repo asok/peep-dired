@@ -1,4 +1,9 @@
-# This project is looking for a mainater, please look [here](https://github.com/asok/peep-dired/issues/17)
+# Moving this project to read-only
+
+As described in the [ticket](https://github.com/asok/peep-dired/issues/17) I stopped using this package years ago. I have no time nor motivation to maintain it.
+As it turns out [Protesilaos](https://protesilaos.com) created his own [package](https://github.com/protesilaos/dired-preview) that provides the same feature as peep-dired. 
+
+The quality of the work Protesilaos is putting into Emacs makes me confident that his package will be far better than mine. So if I were you I would make the switch :)
 
 # Peep Dired
 
@@ -56,6 +61,7 @@ You probably don't want to open certain files like videos when using Peep Dired.
 
 ## Alternatives
 
+* [dired-preview](https://github.com/protesilaos/dired-preview) can be treated as a better replacement for Peep-Dired
 * [ranger.el](https://github.com/ralesi/ranger.el) emulates [ranger](http://ranger.nongnu.org/) in dired. It has the preview feature similar to Peep-Dired.
 * [diredc](https://github.com/Boruch-Baum/emacs-diredc) extensions to dired. It has a browse mode which has a similar feature to Peep-Dired.
 
